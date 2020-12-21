@@ -13,7 +13,7 @@ void print_sqrt(float x) {
 int main() {
     // This is needed in order to enable the
     // signal handlers.
-	init_trycatch();	
+    init_trycatch();	
 
     // Example for throw().
     try {
@@ -39,9 +39,9 @@ int main() {
         for (size_t i = 0; i < 1000000000; i++)
             ;
         printf("Divide 10 by: ");
-		int x = 0;
+	    int x = 0;
         scanf("%d", &x);
-		printf("Result is %d.\n", 10/x);
+	    printf("Result is %d.\n", 10/x);
 
         printf("Enter an address: ");
         size_t p = 0;
