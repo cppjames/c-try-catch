@@ -6,7 +6,7 @@ void print_sqrt(float x) {
     if (x < 0)
         throw(EX_RANGE);
     int out = printf("As follows: %g\n", sqrt(x));
-    if (out == -1)
+    if (out < 0)
         throw(EX_EOF);
 }
 
