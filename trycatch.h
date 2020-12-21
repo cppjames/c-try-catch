@@ -26,33 +26,45 @@ extern jmp_buf _catch_jmp_buf;
 extern jmp_buf _retry_jmp_buf;
 extern int _catch_value;
 extern volatile bool _retry_attempt;
+extern volatile bool _init_signals;
+extern volatile bool _throw_enabled;
 
-void init_trycatch(void);
+#define set_throw_enabled(X)                       \
+    _throw_enabled = X
+#define throw_enabled()                            \
+    _throw_enabled
+
 void _catch_sig_handle(int);
 
-#define try                                    \
-_catch_value = setjmp(_catch_jmp_buf);         \
-setjmp(_retry_jmp_buf);                        \
-if (_retry_attempt) {                          \
-    _catch_value = 0;                          \
-    _retry_attempt = false;                    \
-}                                              \
-if (!_catch_value)
+#define try                                        \
+    if (!_init_signals) {                          \
+        for (uint8_t i = 1; i < SIG_MAX; i++)      \
+            signal(i, _catch_sig_handle);          \
+        _init_signals = true;                      \
+    }                                              \
+    _catch_value = setjmp(_catch_jmp_buf);         \
+    setjmp(_retry_jmp_buf);                        \
+    if (_retry_attempt) {                          \
+        _catch_value = 0;                          \
+        _retry_attempt = false;                    \
+    }                                              \
+    if (!_catch_value)
 
-#define catch_all                              \
-else
+#define catch_all                                  \
+    else
 
-#define catch(X)                               \
-else if (_catch_value == X)
+#define catch(X)                                   \
+    else if (_catch_value == X)
 
-#define finally                                \
-if (_catch_value == 0)
+#define finally                                    \
+    if (_catch_value == 0)
 
-#define throw(X)                               \
-longjmp(_catch_jmp_buf, X)
+#define throw(X)                                   \
+    if (_throw_enabled)                            \
+        longjmp(_catch_jmp_buf, X)
 
-#define retry()                                \
-_retry_attempt = true;                         \
-longjmp(_retry_jmp_buf, 1);                    \
+#define retry()                                    \
+    _retry_attempt = true;                         \
+    longjmp(_retry_jmp_buf, 1);                    \
 
 #endif // TRYCATCH_H

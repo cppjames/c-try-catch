@@ -5,13 +5,15 @@ jmp_buf _catch_jmp_buf = { 0 };
 jmp_buf _retry_jmp_buf = { 0 };
 int _catch_value = 0;
 volatile bool _retry_attempt = false;
-
-void init_trycatch(void) {
-    for (uint8_t i = 1; i < SIG_MAX; i++)
-        signal(i, _catch_sig_handle);
-}
+volatile bool _init_signals = false;
+volatile bool _throw_enabled = true;
 
 void _catch_sig_handle(int sig) {
+    if (!_throw_enabled) {
+        signal(sig, SIG_DFL);
+        return;
+    }
+
     switch (sig) {
         case SIGFPE:
             throw(EX_SIGFPE);

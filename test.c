@@ -11,10 +11,6 @@ void print_sqrt(float x) {
 }
 
 int main() {
-    // This is needed in order to enable the
-    // signal handlers.
-    init_trycatch();	
-
     // Example for throw().
     try {
         printf("Get square root of: ");
