@@ -21,10 +21,12 @@ int main() {
     } catch (EX_EOF) {
         printf("Something's wrong with the streams.\n");
         retry();
-    } catch_all() {
+    } catch_all {
         printf("Something's wrong but aren't sure what.\n");
         return 1;
-    }
+    } finally {
+		printf("You got it right.");
+	}
 
     return 0;
 }
