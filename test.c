@@ -25,8 +25,8 @@ int main() {
         printf("Something's wrong but aren't sure what.\n");
         return 1;
     } finally {
-		printf("You got it right.");
-	}
+        printf("You got it right.");
+    }
 
     return 0;
 }
