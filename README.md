@@ -23,6 +23,8 @@ try {
     // overflow anymore (not recommended unless you are sure
     // this can happen).
     retry();
+} catch(EX_SIGINT) {
+	printf("We have been interrupted. I reapeat: we have been interrupted.");
 }
 ```
 
