@@ -27,11 +27,14 @@ if (_retry_attempt) {                          \
 }                                              \
 if (!_catch_value)
 
-#define catch_all()                            \
+#define catch_all                              \
 else
 
 #define catch(X)                               \
 else if (_catch_value == X)
+
+#define finally                                \
+if (_catch_value == 0)
 
 #define throw(X)                               \
 longjmp(_catch_jmp_buf, X)
