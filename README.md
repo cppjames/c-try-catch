@@ -15,16 +15,20 @@ float ex_sqrt(float x) {
     return sqrt(x);
 }
 
-try {
-    printf("%f", ex_sqrt(5)); // The function may throw.
-} catch(EX_RANGE) {
-    printf("Input error. Trying again...");
-    // This will try again until the function doesn't
-    // overflow anymore (not recommended unless you are sure
-    // this can happen).
-    retry();
-} catch(EX_SIGINT) {
-    printf("We have been interrupted. I repeat: we have been interrupted.");
+int main() {
+    try {
+        printf("%f", ex_sqrt(5)); // The function may throw.
+    } catch(EX_RANGE) {
+        printf("Input error. Trying again...");
+        // This will try again until the function doesn't
+        // overflow anymore (not recommended unless you are sure
+        // this can happen).
+        retry();
+    } catch(EX_SIGINT) {
+        printf("We have been interrupted. I repeat: we have been interrupted.");
+    }
+
+    return 0;
 }
 ```
 
