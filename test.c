@@ -15,7 +15,7 @@ int main() {
     // signal handlers.
 	init_trycatch();	
 
-	// Example for throw().
+    // Example for throw().
     try {
         printf("Get square root of: ");
         float f = 0;
@@ -34,7 +34,7 @@ int main() {
         printf("You got it right.\n");
     }
 
-	// Example for signal handlers.
+    // Example for signal handlers.
     try {
         for (size_t i = 0; i < 1000000000; i++)
             ;
