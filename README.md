@@ -16,6 +16,8 @@ float ex_sqrt(float x) {
 }
 
 int main() {
+    init_trycatch();
+
     try {
         printf("%f", ex_sqrt(5)); // The function may throw.
     } catch(EX_RANGE) {
