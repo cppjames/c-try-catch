@@ -1,6 +1,6 @@
 # Try-Catch blocks for C
 
-Small experiment that simulates try-catch blocks in C using `setjmp`/`longjmp`. It doesn't support nested try blocks and it is not thread safe.
+Small experiment that simulates try-catch blocks in C using `setjmp`/`longjmp`. Please note that it doesn't support nested try blocks and it is not thread safe.
 
 Usage:
 
