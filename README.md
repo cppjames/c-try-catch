@@ -25,7 +25,7 @@ int main() {
     } catch(EX_RANGE) {
         printf("Input error. Trying again...");
         // This will try again until the function doesn't
-        // overflow anymore (not recommended unless you are sure
+        // throw anymore (not recommended unless you are sure
         // this can happen).
         retry();
     } catch(EX_SIGINT) {
