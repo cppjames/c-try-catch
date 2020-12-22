@@ -2,6 +2,10 @@
 
 Small experiment that simulates try-catch blocks in C using `setjmp`/`longjmp`. Please note that it doesn't support nested try blocks and it is not thread safe.
 
+It can handle exceptions and signals. It can simulate the functionality of `try`, `catch(exception)`, `catch(signal)`, `catch_all` and `finally`. It has rudimentary support for tracing the signals and exceptions, showing where and when they happened. Throws and retries can be turned off.
+
+The macros that control the behaviour of the try-catch blocks must be defined before including the header file.
+
 Usage:
 
 ```c

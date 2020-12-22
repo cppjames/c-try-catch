@@ -1,5 +1,20 @@
 #include <stdio.h>
 #include <tgmath.h>
+
+// These two macros disable the throw()
+// and retry() functions. Make sure to
+// define them [before] you include
+// the "trycatch.h" header file.
+//
+// #define NO_THROW
+// #define NO_RETRY
+//
+//
+// This macro enables debug tracing for
+// signals and calls to throw().
+//
+// #define TRACE_THROW
+
 #include "trycatch.h"
 
 void print_sqrt(float x) {

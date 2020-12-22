@@ -4,6 +4,13 @@
 #include <setjmp.h>
 #include <stdbool.h>
 
+#ifdef TRACE_THROW
+    #include <stdio.h>
+#endif
+
+#define EX_BEGIN  0xA0
+#define SIG_BEGIN 0xA6
+
 enum exception {
     EX_OVERFLOW =  0xA0,
     EX_RANGE =     0xA1,
@@ -12,29 +19,65 @@ enum exception {
     EX_MEMORY =    0xA4,
     EX_FILE =      0xA5,
 
-    EX_SIGFPE =    0xB0,
-    EX_SIGILL =    0xB1,
-    EX_SIGSEGV =   0xB2,
-    EX_SIGABRT =   0xB3,
-    EX_SIGINT =    0xB4,
-    EX_SIGTERM =   0xB5
+    EX_SIGFPE =    0xA6,
+    EX_SIGILL =    0xA7,
+    EX_SIGSEGV =   0xA8,
+    EX_SIGABRT =   0xA9,
+    EX_SIGINT =    0xAA,
+    EX_SIGTERM =   0xAB
 };
+
+extern const char *_exception_string[];
 
 #define SIG_MAX 0x20
 
 extern jmp_buf _catch_jmp_buf;
-extern jmp_buf _retry_jmp_buf;
 extern int _catch_value;
 extern volatile bool _retry_attempt;
 extern volatile bool _init_signals;
-extern volatile bool _throw_enabled;
 
-#define set_throw_enabled(X)                       \
-    _throw_enabled = X
-#define throw_enabled()                            \
-    _throw_enabled
+extern volatile bool _trextrigger;
+extern volatile const char *_trexfile;
+extern volatile const char *_trexfunc;
+extern volatile unsigned long _trexline;
+extern volatile int _trex;
 
 void _catch_sig_handle(int);
+
+#define _do_nothing()                                \
+    do { /* nothing */ } while (false)
+
+#define _trace_prepare(X)                        \
+    do { _trextrigger = true;                    \
+    _trexfile = __FILE__;                        \
+    _trexfunc = __func__;                        \
+    _trexline = __LINE__+0UL;                    \
+    _trex = X; } while (false)
+
+#ifdef TRACE_THROW
+    #define _trace_throw(X)                          \
+        fprintf(stderr,                              \
+                "[%s] %s:%lu: Exception %s.\n",      \
+                _trexfile, _trexfunc, _trexline,     \
+                _exception_string[_trex - EX_BEGIN])
+
+    #define _trace_signal()                          \
+        fprintf(stderr,                              \
+                "Interrupted by signal: %s.\n",      \
+                _exception_string[_trex - EX_BEGIN])
+
+    #define _trace_if_triggered()                    \
+        do { if (_trextrigger)                       \
+                 if (_trex >= SIG_BEGIN)             \
+                     _trace_signal();                \
+                 else                                \
+                     _trace_throw();                 \
+             _trextrigger = false;                   \
+        } while (false)
+        
+#else
+    #define _trace_if_triggered() _do_nothing()
+#endif
 
 #define try                                        \
     if (!_init_signals) {                          \
@@ -43,7 +86,7 @@ void _catch_sig_handle(int);
         _init_signals = true;                      \
     }                                              \
     _catch_value = setjmp(_catch_jmp_buf);         \
-    setjmp(_retry_jmp_buf);                        \
+    _trace_if_triggered();                         \
     if (_retry_attempt) {                          \
         _catch_value = 0;                          \
         _retry_attempt = false;                    \
@@ -53,18 +96,27 @@ void _catch_sig_handle(int);
 #define catch_all                                  \
     else
 
-#define catch(X)                                   \
-    else if (_catch_value == X)
-
 #define finally                                    \
     if (_catch_value == 0)
 
-#define throw(X)                                   \
-    if (_throw_enabled)                            \
-        longjmp(_catch_jmp_buf, X)
+#ifndef NO_THROW
+    #define catch(X)                                   \
+        else if (_catch_value == X)
 
-#define retry()                                    \
-    _retry_attempt = true;                         \
-    longjmp(_retry_jmp_buf, 1);                    \
+    #define throw(X)                               \
+        do { _trace_prepare(X);                    \
+        longjmp(_catch_jmp_buf, X); } while (false)
+#else
+    #define catch(X) else if (false)
+    #define throw(X) _do_nothing()
+#endif
+
+#ifndef NO_RETRY
+    #define retry()                                \
+        do { _retry_attempt = true;                \
+        longjmp(_catch_jmp_buf, 1); } while (false)
+#else
+    #define retry() _do_nothing()
+#endif
 
 #endif // TRYCATCH_H
