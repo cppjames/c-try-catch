@@ -31,20 +31,20 @@ extern const char *_exception_string[];
 
 #define SIG_MAX 0x20
 
-extern jmp_buf _catch_jmp_buf;
-extern int _catch_value;
-extern volatile bool _retry_attempt;
-extern volatile bool _init_signals;
+extern _Thread_local jmp_buf _catch_jmp_buf;
+extern _Thread_local int _catch_value;
+extern _Thread_local volatile bool _retry_attempt;
+extern _Thread_local volatile bool _init_signals;
 
-extern volatile bool _trextrigger;
-extern volatile const char *_trexfile;
-extern volatile const char *_trexfunc;
-extern volatile unsigned long _trexline;
-extern volatile int _trex;
+extern _Thread_local volatile bool _trextrigger;
+extern _Thread_local volatile const char *_trexfile;
+extern _Thread_local volatile const char *_trexfunc;
+extern _Thread_local volatile unsigned long _trexline;
+extern _Thread_local volatile int _trex;
 
 void _catch_sig_handle(int);
 
-#define _do_nothing()                                \
+#define _do_nothing()                            \
     do { /* nothing */ } while (false)
 
 #define _trace_prepare(X)                        \
@@ -79,12 +79,20 @@ void _catch_sig_handle(int);
     #define _trace_if_triggered() _do_nothing()
 #endif
 
+#ifndef NO_THROW
+    #define _bind_signals()                        \
+        do {                                       \
+            for (uint8_t i = 1; i < SIG_MAX; i++)  \
+                signal(i, _catch_sig_handle);      \
+            _init_signals = true;                  \
+        } while (false)
+#else
+    #define _bind_signals() _do_nothing()
+#endif
+
 #define try                                        \
-    if (!_init_signals) {                          \
-        for (uint8_t i = 1; i < SIG_MAX; i++)      \
-            signal(i, _catch_sig_handle);          \
-        _init_signals = true;                      \
-    }                                              \
+    if (!_init_signals)                            \
+        _bind_signals();                           \
     _catch_value = setjmp(_catch_jmp_buf);         \
     _trace_if_triggered();                         \
     if (_retry_attempt) {                          \
@@ -93,21 +101,22 @@ void _catch_sig_handle(int);
     }                                              \
     if (!_catch_value)
 
-#define catch_all                                  \
-    else
-
 #define finally                                    \
     if (_catch_value == 0)
 
 #ifndef NO_THROW
-    #define catch(X)                                   \
+    #define catch(X)                                 \
         else if (_catch_value == X)
 
-    #define throw(X)                               \
-        do { _trace_prepare(X);                    \
+    #define throw(X)                                 \
+        do { _trace_prepare(X);                      \
         longjmp(_catch_jmp_buf, X); } while (false)
+
+    #define catch_all                                \
+        else
 #else
     #define catch(X) else if (false)
+    #define catch_all else if (false)
     #define throw(X) _do_nothing()
 #endif
 
