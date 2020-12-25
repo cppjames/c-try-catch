@@ -2,6 +2,8 @@
 #define TRYCATCH_H 1
 
 #include <setjmp.h>
+#include <signal.h>
+#include <stdint.h>
 #include <stdbool.h>
 
 #ifdef TRACE_THROW
